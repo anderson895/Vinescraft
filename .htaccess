@@ -1,0 +1,28 @@
+# Chub's Handicrafts - hadlang sa mga file na hindi dapat mabasa sa browser.
+# Ang instructions.txt ay dating naglalaman ng LIVE na PayMongo secret key at
+# nababasa ng kahit sino sa http://localhost/Chubs/Chubs/instructions.txt
+
+<FilesMatch "\.(txt|log|ini|sql|md|bak|sample\.php)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Ang paymongo_config.php ay loader lang (walang keys sa loob), pero walang
+# dahilan para ma-request ito nang diretso.
+<Files "paymongo_config.php">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</Files>
+
+# Huwag ilista ang mga file kapag walang index.
+Options -Indexes
