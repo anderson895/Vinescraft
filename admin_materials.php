@@ -124,7 +124,7 @@ if (isset($_POST['delete_material'])) {
     }
     
     if ($in_use) {
-        $_SESSION['msg'] = "ERROR: Bawal iremove yung material kasi ginagamit pa ito sa isang product!";
+        $_SESSION['msg'] = "ERROR: This material cannot be removed because it is still used by a product!";
     } else {
         $conn->query("DELETE FROM materials WHERE material_id = $id");
         $_SESSION['msg'] = "Material removed successfully.";
@@ -168,7 +168,7 @@ function render_material_row($row, $show_category = false) {
         <td>
             <input type="number" step="0.01" min="0" oninput="if(parseFloat(value)<0) value='0';" id="reorder-<?php echo $id; ?>"
                    class="stock-input reorder-input" value="<?php echo fmt_stock($row['reorder_level']); ?>"
-                   title="Kapag ang stock ay nasa o mas mababa pa dito, mag-aalerto ang dashboard. Ilagay ang 0 para i-mute.">
+                   title="The dashboard will alert when stock falls to this level or below. Set to 0 to mute.">
         </td>
         <td>
             <span class="stock-badge" style="background:<?php echo $badge['bg']; ?>; color:<?php echo $badge['color']; ?>;"><?php echo $badge['text']; ?></span>
@@ -176,7 +176,7 @@ function render_material_row($row, $show_category = false) {
         <td>
             <button class="btn-action btn-save" onclick="updateStock(<?php echo $id; ?>, this)">Save</button>
             <button class="btn-action btn-edit" onclick="openEditModal(<?php echo $id; ?>, '<?php echo addslashes($row['name']); ?>', '<?php echo addslashes($row['category']); ?>', <?php echo floatval($row['reorder_level']); ?>)">Edit</button>
-            <form method="POST" style="display:inline;" onsubmit="return confirm('Sigurado ka bang gusto mo burahin ito?');">
+            <form method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this?');">
                 <input type="hidden" name="delete_id" value="<?php echo $id; ?>">
                 <button type="submit" name="delete_material" class="btn-action btn-delete">Remove</button>
             </form>
@@ -317,7 +317,7 @@ function render_material_row($row, $show_category = false) {
                         <?php if($other_materials && $other_materials->num_rows > 0): while($row = $other_materials->fetch_assoc()): ?>
                             <?php render_material_row($row, true); ?>
                         <?php endwhile; else: ?>
-                            <tr><td colspan="6" style="text-align: center; color: #aaa; padding: 20px;">Wala pang ibang materials dito. Lumabas dapat ang mga sinave mo sa SQL dito.</td></tr>
+                            <tr><td colspan="6" style="text-align: center; color: #aaa; padding: 20px;">No other materials yet.</td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
@@ -374,7 +374,7 @@ function render_material_row($row, $show_category = false) {
                 <input type="number" name="m_stock" step="0.01" min="0" oninput="if(parseFloat(value)<0) value='0';" required value="0">
                 <label>Re-order Level:</label>
                 <input type="number" name="m_reorder" step="0.01" min="0" oninput="if(parseFloat(value)<0) value='0';" required value="100">
-                <small style="display:block; margin:-10px 0 15px; color:#aaa; font-size:10px;">Mag-aalerto ang dashboard kapag ang stock ay nasa o mas mababa pa dito. Ilagay ang 0 para i-mute.</small>
+                <small style="display:block; margin:-10px 0 15px; color:#aaa; font-size:10px;">The dashboard will alert when stock falls to this level or below. Set to 0 to mute.</small>
                 <button type="submit" name="add_material" class="btn-add" style="width:100%;">Add Material</button>
             </form>
         </div>

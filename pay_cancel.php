@@ -35,4 +35,4 @@ if ($payment_id) {
 }
 
 $back = $order_id ? "checkout.php?id=$order_id" : "my_orders.php";
-echo "<script>alert('Kinansela ang bayad. Hindi ka nasingil.'); window.location.href=" . json_encode($back) . ";</script>";
+echo "<script>alert('Payment cancelled. You were not charged.'); window.location.href=" . json_encode($back) . ";</script>";

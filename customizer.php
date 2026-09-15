@@ -194,7 +194,7 @@ if ($check_br && $check_br->num_rows > 0) {
         <div class="category-tab" onclick="showPanel('wrapper-panel')">2. Wrapper style</div>
         <div id="wrapper-panel" class="panel">
             <div id="wrapperNotice" style="display:none; background:#fce0d8; color:#a2695c; padding:12px 14px; border-radius:10px; font-size:11px; line-height:1.5; margin-bottom:12px;">
-                Hindi namin naibalik ang wrapper ng lumang design na ito - pumili ulit sa ibaba.
+We couldn't restore the wrapper for this older design &mdash; please pick one again below.
                 <span onclick="this.parentElement.style.display='none'" style="float:right; cursor:pointer; font-weight:900;">&times;</span>
             </div>
             <div id="wrapper-list" class="asset-grid"></div>

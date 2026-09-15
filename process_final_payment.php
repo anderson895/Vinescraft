@@ -14,7 +14,7 @@ require_once 'db_connect.php';
  */
 
 if (!setting_bool($conn, 'payment_manual_fallback', false)) {
-    echo "<script>alert('Naka-off ang manual na receipt upload. Gamitin ang GCash checkout.'); window.location.href='my_orders.php';</script>";
+    echo "<script>alert('Manual receipt upload is disabled. Please use the GCash checkout.'); window.location.href='my_orders.php';</script>";
     exit();
 }
 
@@ -63,7 +63,7 @@ if ($amount > $remaining) $amount = $remaining;
 $amount = round($amount, 2);
 
 if ($amount <= 0) {
-    echo "<script>alert('Wala nang babayaran sa order na ito.'); window.location.href='my_orders.php';</script>";
+    echo "<script>alert('There is nothing left to pay on this order.'); window.location.href='my_orders.php';</script>";
     exit();
 }
 
@@ -108,7 +108,7 @@ if ($receipt_path !== "") {
 
 if ($upd->execute()) {
     echo "<script>
-        alert('Naitala ang bayad na ₱" . number_format($amount, 2) . ". Status: " . $new_status . "');
+        alert('Payment of ₱" . number_format($amount, 2) . " recorded. Status: " . $new_status . "');
         window.location.href = 'my_orders.php?status=" . urlencode($new_status) . "';
     </script>";
 } else {

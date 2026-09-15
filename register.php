@@ -27,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 VALUES ('$name', '$email', '$mobile_no', '$hashed_password', '', 'customer')";
 
         if ($conn->query($sql) === TRUE) {
-            $message = "Registration successful! Pwede ka na mag-login.";
+            $message = "Registration successful! You can now log in.";
             $msg_type = "success";
             // Optional: Redirect sa login after 2 seconds
             echo "<script>setTimeout(function(){ window.location.href = 'login.php'; }, 2000);</script>";

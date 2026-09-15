@@ -390,7 +390,7 @@ $total_found = array_sum(array_map('count', $buckets));
             <?php if (!empty($search_query)): ?>
                 <p>We couldn't find anything matching "<strong><?php echo htmlspecialchars($search_query); ?></strong>". Try searching for a different flower, color, or style.</p>
             <?php else: ?>
-                <p>Wala pang item sa filter na ito. Subukan mo ang ibang category o price range.</p>
+                <p>No items match this filter yet. Try a different category or price range.</p>
             <?php endif; ?>
         </div>
     </div>

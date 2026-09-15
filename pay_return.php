@@ -20,7 +20,7 @@ $stmt->execute();
 $pay = $stmt->get_result()->fetch_assoc();
 
 if (!$pay || !hash_equals((string)$pay['return_token'], (string)$token) || intval($pay['user_id']) !== $user_id) {
-    echo "<script>alert('Hindi wasto ang payment link.'); window.location.href='my_orders.php';</script>";
+    echo "<script>alert('Invalid payment link.'); window.location.href='my_orders.php';</script>";
     exit();
 }
 
@@ -61,8 +61,8 @@ if (intval($pay['applied']) === 1) {
             $u->bind_param("si", $raw, $payment_id);
             $u->execute();
             $state   = 'mismatch';
-            $message = 'Hindi tugma ang halagang nabayaran (₱' . number_format($paid_centavos / 100, 2) .
-                       ') sa inaasahan (₱' . number_format($pay['amount_centavos'] / 100, 2) . ').';
+            $message = 'The amount paid (₱' . number_format($paid_centavos / 100, 2) .
+                       ') does not match the expected amount (₱' . number_format($pay['amount_centavos'] / 100, 2) . ').';
         } else {
 
             // --- 5. I-credit sa loob ng transaction ---
@@ -132,7 +132,7 @@ if (intval($pay['applied']) === 1) {
             } catch (Throwable $e) {
                 $conn->rollback();
                 $state   = 'error';
-                $message = 'May problema sa pag-record ng bayad. Pakikontak ang shop.';
+                $message = 'Something went wrong while recording your payment. Please contact the shop.';
             }
         }
     } else {
@@ -198,36 +198,36 @@ $auto_refresh = ($state === 'pending' && $attempt < 6);
 
     <?php if ($state === 'paid'): ?>
         <div class="icon ok">&#10003;</div>
-        <h1 class="ok">Salamat! Natanggap na ang bayad.</h1>
+        <h1 class="ok">Thank you! Payment received.</h1>
         <div class="amount">₱<?= number_format($pay['amount'], 2) ?></div>
         <p>Order #<?= $order_id ?></p>
 
     <?php elseif ($state === 'already'): ?>
         <div class="icon ok">&#10003;</div>
-        <h1 class="ok">Naitala na ang bayad na ito.</h1>
-        <p>Hindi ka nasingil ng dalawang beses. Order #<?= $order_id ?>.</p>
+        <h1 class="ok">This payment is already recorded.</h1>
+        <p>You were not charged twice. Order #<?= $order_id ?>.</p>
 
     <?php elseif ($state === 'mismatch'): ?>
         <div class="icon bad">&#9888;</div>
-        <h1 class="bad">Kailangan ng manu-manong pagsusuri</h1>
+        <h1 class="bad">Manual review needed</h1>
         <p><?= htmlspecialchars($message) ?></p>
-        <p>Hindi muna namin ito itinala. Pakikontak ang shop na dala ang Order #<?= $order_id ?>.</p>
+        <p>We have not recorded this payment yet. Please contact the shop and mention Order #<?= $order_id ?>.</p>
 
     <?php elseif ($state === 'error'): ?>
         <div class="icon bad">&#9888;</div>
-        <h1 class="bad">May naganap na problema</h1>
+        <h1 class="bad">Something went wrong</h1>
         <p><?= htmlspecialchars($message) ?></p>
 
     <?php else: ?>
         <div class="spinner"></div>
-        <h1 class="warn">Kino-kumpirma pa ang bayad...</h1>
+        <h1 class="warn">Confirming your payment...</h1>
         <p>
-            Kung nabayaran mo na ito sa GCash, sandali lang bago ito lumabas.
-            <?php if ($auto_refresh): ?>Awtomatiko itong magche-check ulit sa loob ng 5 segundo.<?php endif; ?>
+            If you already paid through GCash, it may take a moment to appear.
+            <?php if ($auto_refresh): ?>This page will check again in 5 seconds.<?php endif; ?>
         </p>
         <?php if (!$auto_refresh): ?>
-            <p class="warn">Hindi pa rin kumpirmado pagkatapos ng ilang subok. Kung may nabawas sa GCash mo,
-               huwag mag-alala - naitala ang bayad sa PayMongo. Pakikontak ang shop na dala ang Order #<?= $order_id ?>.</p>
+            <p class="warn">Still not confirmed after several tries. If your GCash was charged, don't worry &mdash;
+               the payment is recorded with PayMongo. Please contact the shop and mention Order #<?= $order_id ?>.</p>
         <?php endif; ?>
         <a class="btn" href="pay_return.php?ref=<?= $payment_id ?>&t=<?= urlencode($token) ?>&try=<?= $attempt + 1 ?>">Check again</a>
     <?php endif; ?>
@@ -235,10 +235,10 @@ $auto_refresh = ($state === 'pending' && $attempt < 6);
     <?php if ($order): ?>
     <div class="rows">
         <div class="row"><span class="k">Order Total</span><span class="v">₱<?= number_format($grand_disp, 2) ?></span></div>
-        <div class="row"><span class="k">Bayad na</span><span class="v">₱<?= number_format($order['amount_paid'], 2) ?></span></div>
+        <div class="row"><span class="k">Amount Paid</span><span class="v">₱<?= number_format($order['amount_paid'], 2) ?></span></div>
         <div class="row">
-            <span class="k"><?= $balance_disp > 0 ? 'Babayaran sa pagdating' : 'Balanse' ?></span>
-            <span class="v"><?= $balance_disp > 0 ? '₱' . number_format($balance_disp, 2) : 'Wala na' ?></span>
+            <span class="k"><?= $balance_disp > 0 ? 'Due on Delivery' : 'Balance' ?></span>
+            <span class="v"><?= $balance_disp > 0 ? '₱' . number_format($balance_disp, 2) : 'None' ?></span>
         </div>
         <div class="row"><span class="k">Status</span><span class="v"><?= htmlspecialchars($order['status']) ?></span></div>
     </div>

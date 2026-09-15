@@ -604,14 +604,14 @@ function searchMapLocation() {
                     
                     // Magpakita ng alert kung hindi nahanap ang exact street at gumamit ng fallback
                     if (zoomLevel < 16) {
-                        alert(`Hindi mahanap ang eksaktong street. Nilagay namin ang pin sa ${query}. Paki-drag na lang ang red pin sa tapat ng inyong bahay.`);
+                        alert(`We couldn't find the exact street. We placed the pin at ${query}. Please drag the red pin to your house.`);
                     }
                 } else if (fallbackCallback) {
                     // Kung hindi nahanap, subukan ang next level
                     fallbackCallback(); 
                 } else {
                     if(btn) btn.innerHTML = origText;
-                    alert("Hindi mahanap ang lokasyon sa mapa. Paki-click ang 'Use GPS' o i-drag ang pin manually.");
+                    alert("We couldn't find that location on the map. Please click 'Use GPS' or drag the pin manually.");
                 }
             }).catch(err => {
                 if(btn) btn.innerHTML = origText;

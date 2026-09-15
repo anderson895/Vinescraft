@@ -39,7 +39,7 @@ if (!$order) { die("Order not found."); }
 
 // Hindi pa napepresyuhan ng admin ang custom request - walang mache-checkout.
 if ($order['status'] === 'Pending' || floatval($order['total_price']) <= 0) {
-    echo "<script>alert('Hinihintay pa ang presyo mula sa shop para sa order na ito.'); window.location.href='my_orders.php';</script>";
+    echo "<script>alert('This order is still waiting for a price from the shop.'); window.location.href='my_orders.php';</script>";
     exit();
 }
 
@@ -81,14 +81,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_checkout'])) 
              : $grand;
 
     if ($shipping_method === 'ship' && $address === '') {
-        $checkout_error = "Pumili muna ng delivery address.";
+        $checkout_error = "Please select a delivery address.";
     } elseif ($shipping_method === 'ship' && !$courier) {
-        $checkout_error = "Pumili muna ng courier.";
+        $checkout_error = "Please select a courier.";
     } elseif ($payment_method === 'GCash' && $pay_now < $min_online) {
         // Minimum ng PayMongo sa e-wallet. Masyadong maliit ang DP para sa online payment.
-        $checkout_error = "Masyadong maliit ang halagang babayaran online (₱" . number_format($pay_now, 2) .
-                          "). Ang minimum ay ₱" . number_format($min_online, 2) .
-                          ". Piliin ang Full Payment o Cash on Delivery.";
+        $checkout_error = "The amount payable online (₱" . number_format($pay_now, 2) .
+                          ") is below the ₱" . number_format($min_online, 2) .
+                          " minimum. Please choose Full Payment or Cash on Delivery.";
     } else {
         // FIXED: dati ay hindi talaga nasi-save ang shipping_method at shipping_fee -
         // naipapasa lang ito sa payment page tapos nawawala.
@@ -352,7 +352,7 @@ $thumb = $is_json ? json_decode($img_data, true)['f'] : $img_data;
                 <div id="pickup-block" class="pickup-note" style="display:none;">
                     <strong id="pickup-label">Pick up at</strong>
                     <?= htmlspecialchars($pickup_addr ?: "Chub's Handicrafts") ?>
-                    <div style="margin-top:6px; color:#a2695c;">Walang shipping fee.</div>
+                    <div style="margin-top:6px; color:#a2695c;">No shipping fee.</div>
                 </div>
             </div>
 
@@ -365,14 +365,14 @@ $thumb = $is_json ? json_decode($img_data, true)['f'] : $img_data;
                         <input type="radio" name="payment_method" value="GCash" <?= $gcash_on ? 'checked' : 'disabled' ?> onchange="recalc()">
                         <div class="opt-body">
                             <strong>GCash</strong>
-                            <small>Bayad online ngayon.</small>
+                            <small>Pay online now.</small>
                         </div>
                     </label>
                     <label class="opt-card <?= !$gcash_on && $cod_on ? 'selected' : ($cod_on ? '' : 'disabled') ?>" data-group="pm">
                         <input type="radio" name="payment_method" value="COD" <?= !$gcash_on && $cod_on ? 'checked' : '' ?> <?= $cod_on ? '' : 'disabled' ?> onchange="recalc()">
                         <div class="opt-body">
                             <strong>Cash on Delivery</strong>
-                            <small>Bayad sa pagdating.</small>
+                            <small>Pay when it arrives.</small>
                         </div>
                     </label>
                 </div>
@@ -384,14 +384,14 @@ $thumb = $is_json ? json_decode($img_data, true)['f'] : $img_data;
                             <input type="radio" name="payment_plan" value="dp50" id="plan-dp" onchange="recalc()">
                             <div class="opt-body">
                                 <strong><?= $dp_percent ?>% Downpayment</strong>
-                                <small id="dp-hint">Bayad ngayon, balanse sa pagdating.</small>
+                                <small id="dp-hint">Pay part now, the rest on delivery.</small>
                             </div>
                         </label>
                         <label class="opt-card selected" data-group="plan" id="plan-full-card">
                             <input type="radio" name="payment_plan" value="full" id="plan-full" checked onchange="recalc()">
                             <div class="opt-body">
                                 <strong>Full Payment</strong>
-                                <small>Bayad lahat ngayon.</small>
+                                <small>Pay everything now.</small>
                             </div>
                         </label>
                     </div>
@@ -399,7 +399,7 @@ $thumb = $is_json ? json_decode($img_data, true)['f'] : $img_data;
 
                 <div id="cod-note" class="pickup-note" style="display:none; margin-top:4px;">
                     <strong>Cash on Delivery</strong>
-                    <span id="cod-text">Ibabayad mo ang buong halaga sa rider pagdating ng order.</span>
+                    <span id="cod-text">You will pay the full amount to the rider when your order arrives.</span>
                 </div>
             </div>
         </div>
@@ -481,8 +481,8 @@ $thumb = $is_json ? json_decode($img_data, true)['f'] : $img_data;
 
             // Wala nang "delivery" kung pickup/walkin - hindi magkasya ang COD wording
             document.getElementById('cod-text').innerText = isShip
-                ? 'Ibabayad mo ang buong halaga sa rider pagdating ng order.'
-                : 'Ibabayad mo ang buong halaga sa shop pagkuha mo ng order.';
+                ? 'You will pay the full amount to the rider when your order arrives.'
+                : 'You will pay the full amount at the shop when you pick up your order.';
 
             // Kapag naka-disable ang address select, huwag itong isama sa POST
             const sel = document.getElementById('address-select');
@@ -511,7 +511,7 @@ $thumb = $is_json ? json_decode($img_data, true)['f'] : $img_data;
 
             const dpNow = Math.round(SUBTOTAL * (DP_PERCENT / 100) * 100) / 100 + fee;
             document.getElementById('dp-hint').innerText =
-                'Bayad ngayon ' + peso(dpNow) + ', balanse ' + peso(total - dpNow) + ' sa pagdating.';
+                'Pay ' + peso(dpNow) + ' now, ' + peso(total - dpNow) + ' on delivery.';
 
             // Minimum ng PayMongo - masyadong maliit ang DP para sa online payment
             const dpTooSmall = dpNow < MIN_ONLINE;
@@ -540,7 +540,7 @@ $thumb = $is_json ? json_decode($img_data, true)['f'] : $img_data;
             document.getElementById('paynow-label').innerText = label;
             document.getElementById('sum-paynow').innerText = peso(isCOD ? total : payNow);
             document.getElementById('balance-note').innerText =
-                balance > 0 && !isCOD ? 'Balanse sa pagdating: ' + peso(balance) : '';
+                balance > 0 && !isCOD ? 'Balance on delivery: ' + peso(balance) : '';
 
             // Button label + validation
             const btn = document.getElementById('btn-confirm');
@@ -551,15 +551,15 @@ $thumb = $is_json ? json_decode($img_data, true)['f'] : $img_data;
             warn.style.display = 'none';
 
             if (needsAddress) {
-                warn.innerText = 'Magdagdag muna ng delivery address para makapagpatuloy.';
+                warn.innerText = 'Please add a delivery address to continue.';
                 warn.style.display = 'block';
             } else if (!isCOD && payNow < MIN_ONLINE) {
-                warn.innerText = 'Ang minimum na online payment ay ' + peso(MIN_ONLINE) +
-                                 '. Piliin ang Cash on Delivery para sa order na ito.';
+                warn.innerText = 'The minimum online payment is ' + peso(MIN_ONLINE) +
+                                 '. Please choose Cash on Delivery for this order.';
                 warn.style.display = 'block';
                 blocked = true;
             } else if (dpTooSmall && !isCOD) {
-                warn.innerText = 'Masyadong maliit ang ' + DP_PERCENT + '% downpayment para sa online payment (minimum ' + peso(MIN_ONLINE) + ').';
+                warn.innerText = 'The ' + DP_PERCENT + '% downpayment is below the ' + peso(MIN_ONLINE) + ' online payment minimum.';
                 warn.style.display = 'block';
             }
 

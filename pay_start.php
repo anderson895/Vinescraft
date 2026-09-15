@@ -19,7 +19,7 @@ function pay_fail($msg, $order_id = 0) {
     exit();
 }
 
-if (!$order_id) pay_fail('Nawawala ang order ID.');
+if (!$order_id) pay_fail('Missing order ID.');
 
 // --- 1. Kunin ang order (naka-scope sa may-ari) ---
 $stmt = $conn->prepare("SELECT * FROM orders WHERE order_id = ? AND user_id = ?");
@@ -27,9 +27,9 @@ $stmt->bind_param("ii", $order_id, $user_id);
 $stmt->execute();
 $order = $stmt->get_result()->fetch_assoc();
 
-if (!$order) pay_fail('Hindi mahanap ang order.');
+if (!$order) pay_fail('Order not found.');
 if (in_array($order['status'], ['Cancelled', 'Completed'], true)) {
-    pay_fail('Sarado na ang order na ito.');
+    pay_fail('This order is already closed.');
 }
 
 // --- 2. I-compute ang halaga DITO LANG. Walang halagang galing sa browser. ---
@@ -56,19 +56,19 @@ if ($amount > $remaining) $amount = $remaining;
 $amount = round($amount, 2);
 
 if ($amount <= 0) {
-    pay_fail('Wala nang babayaran sa order na ito.', $order_id);
+    pay_fail('There is nothing left to pay on this order.', $order_id);
 }
 
 $amount_centavos = pm_pesos_to_centavos($amount);
 $min_centavos    = setting_int($conn, 'paymongo_min_centavos', 10000);
 if ($amount_centavos < $min_centavos) {
-    pay_fail('Ang minimum na online payment ay ₱' . number_format($min_centavos / 100, 2) .
-             '. Piliin ang Full Payment o Cash on Delivery.', $order_id);
+    pay_fail('The minimum online payment is ₱' . number_format($min_centavos / 100, 2) .
+             '. Please choose Full Payment or Cash on Delivery.', $order_id);
 }
 
 $keys = paymongo_keys($conn);
 if ($keys === false) {
-    pay_fail('Hindi pa naka-setup ang payment gateway. Pakikontak ang shop.', $order_id);
+    pay_fail('The payment gateway is not set up yet. Please contact the shop.', $order_id);
 }
 
 // --- 3. Gumawa muna ng payments row BAGO mag-redirect ---
@@ -81,7 +81,7 @@ $ins->execute();
 $payment_id = $conn->insert_id;
 
 if (!$payment_id) {
-    pay_fail('Hindi ma-simulan ang bayad. Subukan ulit.', $order_id);
+    pay_fail('Could not start the payment. Please try again.', $order_id);
 }
 
 // --- 4. Gumawa ng Checkout Session ---
@@ -101,7 +101,7 @@ if ($code < 200 || $code >= 300 || empty($resp['data']['id'])) {
     $upd = $conn->prepare("UPDATE payments SET status = 'failed', raw_response = ? WHERE payment_id = ?");
     $upd->bind_param("si", $raw, $payment_id);
     $upd->execute();
-    pay_fail('Hindi magawa ang bayad: ' . $err, $order_id);
+    pay_fail('Could not create the payment: ' . $err, $order_id);
 }
 
 $session_id   = $resp['data']['id'];
@@ -113,7 +113,7 @@ $upd->bind_param("ssi", $session_id, $intent_id, $payment_id);
 $upd->execute();
 
 if (!$checkout_url) {
-    pay_fail('Walang natanggap na payment link mula sa gateway.', $order_id);
+    pay_fail('No payment link was returned by the gateway.', $order_id);
 }
 
 // --- 5. Papunta na sa hosted page ng PayMongo ---

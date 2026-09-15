@@ -30,7 +30,7 @@ if (isset($_POST['save_shipping'])) {
 if (isset($_POST['save_payment'])) {
     $dp = intval($_POST['dp_percent'] ?? 50);
     if ($dp < 1 || $dp > 99) {
-        $error = "Dapat nasa pagitan ng 1 at 99 ang downpayment percent.";
+        $error = "Downpayment percent must be between 1 and 99.";
     } else {
         setting_set($conn, 'dp_percent', (string)$dp);
         setting_set($conn, 'gcash_enabled', isset($_POST['gcash_enabled']) ? '1' : '0');
@@ -38,7 +38,7 @@ if (isset($_POST['save_payment'])) {
 
         if (!isset($_POST['gcash_enabled']) && !isset($_POST['cod_enabled'])) {
             setting_set($conn, 'cod_enabled', '1');
-            $error = "Kailangang may kahit isang payment method na bukas - binalik ang COD.";
+            $error = "At least one payment method must stay enabled &mdash; COD was turned back on.";
         } else {
             $message = "Payment options updated!";
         }
@@ -49,7 +49,7 @@ if (isset($_POST['save_payment'])) {
 if (isset($_POST['save_gateway'])) {
     $mode = ($_POST['paymongo_mode'] ?? 'test') === 'live' ? 'live' : 'test';
     if ($mode === 'live' && !paymongo_live_allowed()) {
-        $error = "Naka-lock ang LIVE mode sa server config file. Palitan muna ang 'allow_live' ng true.";
+        $error = "LIVE mode is locked in the server config file. Set 'allow_live' to true first.";
     } else {
         setting_set($conn, 'paymongo_mode', $mode);
         $message = "Payment gateway mode: " . strtoupper($mode);
@@ -141,7 +141,7 @@ $current_mode = setting_get($conn, 'paymongo_mode', 'test');
         </div>
 
         <h2>Store Settings</h2>
-        <p style="font-size: 13px; color: #888; margin-bottom: 30px;">Shipping fees, payment options, at payment gateway ng shop.</p>
+        <p style="font-size: 13px; color: #888; margin-bottom: 30px;">Shipping fees, payment options, and the shop's payment gateway.</p>
 
         <?php if ($message): ?><div class="alert alert-success"><?php echo htmlspecialchars($message); ?></div><?php endif; ?>
         <?php if ($error): ?><div class="alert alert-error"><?php echo htmlspecialchars($error); ?></div><?php endif; ?>
@@ -149,7 +149,7 @@ $current_mode = setting_get($conn, 'paymongo_mode', 'test');
         <!-- 1. SHIPPING & COURIER FEES -->
         <div class="content-box">
             <h3>Shipping &amp; Courier Fees</h3>
-            <p class="hint">Ito ang makikita ng customer sa checkout. Awtomatikong nada-dagdag sa total ang fee ng piniling courier.</p>
+            <p class="hint">These are what customers see at checkout. The selected courier's fee is added to the order total automatically.</p>
             <form method="POST">
                 <div class="form-row">
                     <div class="form-group">
@@ -173,6 +173,7 @@ $current_mode = setting_get($conn, 'paymongo_mode', 'test');
                 </div>
                 <div class="form-group">
                     <label>Pick Up / Walk In Address</label>
+
                     <textarea name="store_pickup_address" rows="2"><?php echo htmlspecialchars(setting_get($conn, 'store_pickup_address', '')); ?></textarea>
                 </div>
                 <button type="submit" name="save_shipping" class="btn-save">Save Shipping Fees</button>
@@ -182,7 +183,7 @@ $current_mode = setting_get($conn, 'paymongo_mode', 'test');
         <!-- 2. PAYMENT OPTIONS -->
         <div class="content-box">
             <h3>Payment Options</h3>
-            <p class="hint">Ang downpayment percent ang ginagamit kapag pinili ng customer ang partial payment. Ang natitira ay babayaran sa delivery.</p>
+            <p class="hint">The downpayment percent applies when a customer chooses partial payment. The remainder is paid on delivery.</p>
             <form method="POST">
                 <div class="form-group">
                     <label>Downpayment Percent (%)</label>
@@ -191,12 +192,12 @@ $current_mode = setting_get($conn, 'paymongo_mode', 'test');
 
                 <div class="toggle-row">
                     <input type="checkbox" id="gcash_enabled" name="gcash_enabled" value="1" <?php echo setting_bool($conn, 'gcash_enabled', true) ? 'checked' : ''; ?>>
-                    <label for="gcash_enabled">Allow GCash (online)<br><span class="sub">Pwedeng pumili ng downpayment o buong bayad.</span></label>
+                    <label for="gcash_enabled">Allow GCash (online)<br><span class="sub">Customers can choose downpayment or full payment.</span></label>
                 </div>
 
                 <div class="toggle-row">
                     <input type="checkbox" id="cod_enabled" name="cod_enabled" value="1" <?php echo setting_bool($conn, 'cod_enabled', true) ? 'checked' : ''; ?>>
-                    <label for="cod_enabled">Allow Cash on Delivery<br><span class="sub">Buong halaga ang babayaran sa rider pagdating ng item.</span></label>
+                    <label for="cod_enabled">Allow Cash on Delivery<br><span class="sub">The full amount is paid to the rider on arrival.</span></label>
                 </div>
 
                 <button type="submit" name="save_payment" class="btn-save">Save Payment Options</button>
@@ -209,16 +210,16 @@ $current_mode = setting_get($conn, 'paymongo_mode', 'test');
 
             <?php if (!$configured): ?>
                 <div class="alert alert-error" style="max-width:none;">
-                    Hindi pa nakalagay ang config file.<br>
-                    Kopyahin ang <span class="key-pill">paymongo_config.sample.php</span> papuntang
-                    <span class="key-pill"><?php echo CHUBS_PAYMONGO_DEFAULT_PATH; ?></span> at ilagay dun ang keys.
+                    The config file is not set up yet.<br>
+                    Copy <span class="key-pill">paymongo_config.sample.php</span> to
+                    <span class="key-pill"><?php echo CHUBS_PAYMONGO_DEFAULT_PATH; ?></span> and put your keys there.
                 </div>
             <?php else: ?>
                 <p class="hint">
-                    Aktibong key ngayon: <span class="key-pill"><?php echo htmlspecialchars(paymongo_key_hint($keys['public'] ?? '')); ?></span>
+                    Active key: <span class="key-pill"><?php echo htmlspecialchars(paymongo_key_hint($keys['public'] ?? '')); ?></span>
                     &nbsp;&middot;&nbsp; Mode: <strong style="color: <?php echo $keys['mode'] === 'live' ? '#c62828' : '#2e7d32'; ?>;"><?php echo strtoupper($keys['mode']); ?></strong>
                     <?php if ($current_mode === 'live' && $keys['mode'] === 'test'): ?>
-                        <br><strong style="color:#c62828;">LIVE ang nakapili pero naka-lock pa rin sa server config, kaya TEST ang ginagamit.</strong>
+                        <br><strong style="color:#c62828;">LIVE is selected but still locked in the server config, so TEST keys are being used.</strong>
                     <?php endif; ?>
                 </p>
 
@@ -227,7 +228,7 @@ $current_mode = setting_get($conn, 'paymongo_mode', 'test');
                         <input type="radio" name="paymongo_mode" value="test" <?php echo $current_mode !== 'live' ? 'checked' : ''; ?>>
                         <div>
                             <strong>TEST mode</strong>
-                            <span>Walang totoong pera. Dito muna habang sinusubukan ang checkout.</span>
+                            <span>No real money moves. Stay here while you are testing checkout.</span>
                         </div>
                     </label>
 
@@ -236,9 +237,9 @@ $current_mode = setting_get($conn, 'paymongo_mode', 'test');
                         <div>
                             <strong>LIVE mode</strong>
                             <?php if (paymongo_live_allowed()): ?>
-                                <span>Totoong singil sa GCash ng customer. Siguraduhing nasubukan na ang buong flow.</span>
+                                <span>Customers are charged for real through GCash. Make sure you have tested the whole flow.</span>
                             <?php else: ?>
-                                <span>Naka-lock sa server config. Para buksan, palitan ang <code>'allow_live'</code> ng <code>true</code> sa
+                                <span>Locked in the server config. To enable, set <code>'allow_live'</code> to <code>true</code> in
                                 <?php echo CHUBS_PAYMONGO_DEFAULT_PATH; ?>.</span>
                             <?php endif; ?>
                         </div>

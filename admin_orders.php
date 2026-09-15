@@ -157,7 +157,7 @@ if (isset($_POST['set_price'])) {
 if (isset($_POST['recheck_payment'])) {
     require_once 'paymongo.php';
     $oid = intval($_POST['order_id']);
-    $msg = "Walang nakitang bagong bayad.";
+    $msg = "No new payment found.";
 
     $q = $conn->prepare("SELECT * FROM payments
                          WHERE order_id = ? AND applied = 0 AND checkout_session_id IS NOT NULL
@@ -167,16 +167,16 @@ if (isset($_POST['recheck_payment'])) {
     $pending = $q->get_result()->fetch_assoc();
 
     if (!$pending) {
-        $msg = "Walang naka-pending na online payment para sa order na ito.";
+        $msg = "No pending online payment for this order.";
     } else {
         [$code, $resp] = pm_get_checkout_session($conn, $pending['checkout_session_id']);
         $paid = ($code >= 200 && $code < 300) ? pm_find_paid_payment($resp) : null;
 
         if (!$paid) {
-            $msg = "Hindi pa bayad sa PayMongo ang attempt na ito.";
+            $msg = "This attempt is not paid yet on PayMongo.";
         } elseif (intval($paid['attributes']['amount'] ?? 0) !== intval($pending['amount_centavos'])) {
-            $msg = "MALI ANG HALAGA: binayaran ay ₱" . number_format(($paid['attributes']['amount'] ?? 0) / 100, 2) .
-                   " pero ₱" . number_format($pending['amount_centavos'] / 100, 2) . " ang hinihingi. Hindi itinala.";
+            $msg = "AMOUNT MISMATCH: paid ₱" . number_format(($paid['attributes']['amount'] ?? 0) / 100, 2) .
+                   " but ₱" . number_format($pending['amount_centavos'] / 100, 2) . " was expected. Not recorded.";
             $raw = json_encode($paid);
             $u = $conn->prepare("UPDATE payments SET status='mismatch', raw_response=? WHERE payment_id=?");
             $u->bind_param("si", $raw, $pending['payment_id']);
@@ -208,9 +208,9 @@ if (isset($_POST['recheck_payment'])) {
                                        WHERE order_id = ?");
                 $upd->bind_param("dssi", $amt, $ps, $st, $oid);
                 $upd->execute();
-                $msg = "Nakita at naitala ang bayad na ₱" . number_format($amt, 2) . ". Status: $st";
+                $msg = "Payment of ₱" . number_format($amt, 2) . " found and recorded. Status: $st";
             } else {
-                $msg = "Naitala na dati ang bayad na ito.";
+                $msg = "This payment was already recorded.";
             }
         }
     }
@@ -230,7 +230,7 @@ if (isset($_POST['collect_balance'])) {
                             WHERE order_id = ? AND status = 'To Receive'");
     $stmt->bind_param("i", $oid);
     $stmt->execute();
-    echo "<script>alert('Balance collected. Fully Paid na ang order.'); window.location.href='admin_orders.php?view=active';</script>";
+    echo "<script>alert('Balance collected. The order is now Fully Paid.'); window.location.href='admin_orders.php?view=active';</script>";
     exit();
 }
 
@@ -342,7 +342,7 @@ if (isset($_POST['update_status'])) {
 
                 $deduction_msg = "\\n\\n[INVENTORY REPORT]\\n" . implode("\\n", $deducted_list);
             } else {
-                $deduction_msg = "\\n\\n[WARNING] Walang materials na nakuha sa recipes table.";
+                $deduction_msg = "\\n\\n[WARNING] No materials were found in the recipes table.";
             }
         }
     }
@@ -622,14 +622,14 @@ try {
                             <?php endif; ?>
 
                             <?php if($o['status'] == 'To Receive' && $o_balance > 0): ?>
-                                <form method="POST" onsubmit="return confirm('Kinolekta na ang ₱<?= number_format($o_balance, 2) ?> mula sa customer?');" style="margin-top:6px;">
+                                <form method="POST" onsubmit="return confirm('Confirm that ₱<?= number_format($o_balance, 2) ?> was collected from the customer?');" style="margin-top:6px;">
                                     <input type="hidden" name="order_id" value="<?= $o['order_id'] ?>">
                                     <button type="submit" name="collect_balance" class="btn-action" style="background:#2ed573; font-size:9px; padding:5px 8px;">Collect Balance</button>
                                 </form>
                             <?php endif; ?>
 
                             <?php if(!empty($pending_pay[$o['order_id']])): ?>
-                                <form method="POST" style="margin-top:6px;" title="Tanungin ulit ang PayMongo. Gamitin ito kung nagbayad ang customer pero hindi nakabalik sa site.">
+                                <form method="POST" style="margin-top:6px;" title="Ask PayMongo again. Use this if the customer paid but did not make it back to the site.">
                                     <input type="hidden" name="order_id" value="<?= $o['order_id'] ?>">
                                     <button type="submit" name="recheck_payment" class="btn-action" style="background:#5c8ff5; font-size:9px; padding:5px 8px;">Re-check Payment</button>
                                 </form>

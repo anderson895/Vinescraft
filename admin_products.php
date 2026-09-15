@@ -263,7 +263,7 @@ if (isset($_POST['add_product'])) {
 if (isset($_GET['clear_orders'])) {
     $id = intval($_GET['clear_orders']);
     $conn->query("DELETE FROM order_details WHERE product_id = $id");
-    echo "<script>alert('Order records cleared successfully! Pwede mo na ngayong burahin ang product.'); window.location.href='admin_products.php';</script>";
+    echo "<script>alert('Order records cleared successfully! You can now delete the product.'); window.location.href='admin_products.php';</script>";
     exit();
 }
 
@@ -276,7 +276,7 @@ if (isset($_GET['delete'])) {
     $order_count = $check_orders ? $check_orders->fetch_assoc()['total_orders'] : 0;
 
     if ($order_count > 0) {
-        echo "<script>alert('Bawal burahin itong product dahil may naka-link na orders (pending/completed). Paki-click muna ang \"Clear Records\" button.'); window.location.href='admin_products.php';</script>";
+        echo "<script>alert('This product cannot be deleted because it has linked orders (pending/completed). Please click the \"Clear Records\" button first.'); window.location.href='admin_products.php';</script>";
         exit();
     } else {
         $conn->query("DELETE FROM product_materials WHERE product_id = $id");
@@ -501,8 +501,8 @@ if (isset($_GET['edit'])) {
                             <a href="admin_products.php?edit=<?php echo $row['product_id']; ?>" class="action-link">Edit / Add Stock</a> | 
                             
                             <?php if ($row['order_count'] > 0): ?>
-                                <a href="admin_products.php?clear_orders=<?php echo $row['product_id']; ?>" class="action-link" style="color: #e67e22;" onclick="return confirm('WARNING: Sigurado ka bang gusto mong i-clear ang <?php echo $row['order_count']; ?> order record(s) ng product na ito? Magiging apektado ang transaction history.')">Clear Records (<?php echo $row['order_count']; ?>)</a> | 
-                                <a href="javascript:void(0);" class="action-link" style="color: #ff4757; opacity: 0.4; cursor: not-allowed;" onclick="alert('Bawal burahin itong product dahil may <?php echo $row['order_count']; ?> na naka-link na order dito! I-click muna ang \'Clear Records\' kung gusto mo talaga itong tanggalin.')">Delete</a>
+                                <a href="admin_products.php?clear_orders=<?php echo $row['product_id']; ?>" class="action-link" style="color: #e67e22;" onclick="return confirm('WARNING: Are you sure you want to clear <?php echo $row['order_count']; ?> order record(s) for this product? This will affect the transaction history.')">Clear Records (<?php echo $row['order_count']; ?>)</a> |
+                                <a href="javascript:void(0);" class="action-link" style="color: #ff4757; opacity: 0.4; cursor: not-allowed;" onclick="alert('This product cannot be deleted because it has <?php echo $row['order_count']; ?> linked order(s). Click \'Clear Records\' first if you really want to remove it.')">Delete</a>
                             <?php else: ?>
                                 <a href="admin_products.php?delete=<?php echo $row['product_id']; ?>" class="action-link" style="color: #ff4757;" onclick="return confirm('Are you sure you want to delete this product? The linked material recipe will also be removed.')">Delete</a>
                             <?php endif; ?>

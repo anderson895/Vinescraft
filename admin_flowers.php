@@ -58,7 +58,7 @@ if (isset($_POST['add_flower'])) {
     $name = trim($conn->real_escape_string($_POST['name']));
     
     if (in_array(strtolower($name), $hardcoded_names)) {
-        $message = "Error: Bawal gamitin ang pangalan na '$name' dahil isa itong default system flower. Umisip ng ibang pangalan (e.g., 'Blue Rose Variant').";
+        $message = "Error: '$name' cannot be used because it is a default system flower. Please choose a different name (e.g., 'Blue Rose Variant').";
     } else {
         $image = $_FILES['image']['name'];
         $target = "uploads/custom_flowers/" . time() . "_" . basename($image);
@@ -89,7 +89,7 @@ if (isset($_POST['edit_flower'])) {
     $name = trim($conn->real_escape_string($_POST['name']));
 
     if (strtolower($old_name) !== strtolower($name) && in_array(strtolower($name), $hardcoded_names)) {
-        $message = "Error: Bawal gamitin ang default system name na '$name'.";
+        $message = "Error: '$name' is a default system name and cannot be used.";
     } else {
         if (!empty($_FILES['image']['name'])) {
             $image = $_FILES['image']['name'];

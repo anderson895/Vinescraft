@@ -312,7 +312,7 @@ $orders = $stmt->get_result();
 
                 <?php if($balance > 0 && $paid > 0 && !in_array($row['status'], ['Cancelled', 'Completed'])): ?>
                     <div style="font-size:11px; color:#a2695c; margin-top:4px;">
-                        Bayad na: ₱<?= number_format($paid, 2) ?> &middot; <strong>₱<?= number_format($balance, 2) ?> due on delivery</strong>
+                        Paid: ₱<?= number_format($paid, 2) ?> &middot; <strong>₱<?= number_format($balance, 2) ?> due on delivery</strong>
                     </div>
                 <?php elseif($row['payment_status'] === 'COD' && !in_array($row['status'], ['Cancelled', 'Completed'])): ?>
                     <div style="font-size:11px; color:#a2695c; margin-top:4px;">
@@ -337,13 +337,13 @@ $orders = $stmt->get_result();
 
                 <?php elseif($row['status'] == 'To Receive' && $balance > 0 && $row['payment_status'] !== 'COD'): ?>
                     <div class="balance-box">
-                        <p style="font-size: 10px; margin-bottom: 8px;">Order ready! Pwede mo nang bayaran online ang balanse, o sa rider na lang pagdating.</p>
+                        <p style="font-size: 10px; margin-bottom: 8px;">Order ready! You can pay the balance online now, or pay the rider on delivery.</p>
                         <button class="btn-action" onclick="window.location.href='pay_start.php?order_id=<?= $row['order_id'] ?>&purpose=balance'">Pay Balance (₱<?= number_format($balance, 2) ?>)</button>
                     </div>
 
                 <?php elseif($row['status'] == 'To Receive' && $row['payment_status'] === 'COD'): ?>
                     <div class="balance-box">
-                        <p style="font-size: 10px; margin: 0;">Papunta na sa iyo. Ihanda ang <strong>₱<?= number_format($balance, 2) ?></strong> na cash para sa rider.</p>
+                        <p style="font-size: 10px; margin: 0;">On its way! Please prepare <strong>₱<?= number_format($balance, 2) ?></strong> in cash for the rider.</p>
                     </div>
 
                 <?php elseif($row['status'] == 'Completed'): ?>

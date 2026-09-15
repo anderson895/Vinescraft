@@ -20,7 +20,7 @@ require_once __DIR__ . '/paymongo_config.php';
 function pm_request($conn, $method, $path, $payload = null) {
     $keys = paymongo_keys($conn);
     if ($keys === false) {
-        return [0, ['errors' => [['detail' => 'Hindi pa naka-setup ang PayMongo config file.']]]];
+        return [0, ['errors' => [['detail' => 'The PayMongo config file is not set up yet.']]]];
     }
 
     $url = rtrim($keys['base_url'], '/') . '/' . ltrim($path, '/');
@@ -51,7 +51,7 @@ function pm_request($conn, $method, $path, $payload = null) {
     curl_close($ch);
 
     if ($raw === false) {
-        return [0, ['errors' => [['detail' => 'Hindi maabot ang PayMongo: ' . $err]]]];
+        return [0, ['errors' => [['detail' => 'Could not reach PayMongo: ' . $err]]]];
     }
 
     $decoded = json_decode($raw, true);
@@ -123,5 +123,5 @@ function pm_error_message($response) {
     if (!empty($response['errors'][0]['detail'])) {
         return $response['errors'][0]['detail'];
     }
-    return 'Hindi inaasahang sagot mula sa payment gateway.';
+    return 'Unexpected response from the payment gateway.';
 }

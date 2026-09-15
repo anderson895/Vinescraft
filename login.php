@@ -29,10 +29,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             header("Location: index.php");
             exit();
         } else {
-            $error = "Mali ang password.";
+            $error = "Incorrect password.";
         }
     } else {
-        $error = "Walang account na nakarehistro sa email na yan.";
+        $error = "No account is registered with that email.";
     }
 }
 ?>

@@ -31,10 +31,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             header("Location: admin_dashboard.php");
             exit();
         } else {
-            $error = "Mali ang admin password.";
+            $error = "Incorrect admin password.";
         }
     } else {
-        $error = "Hindi admin account ang email na yan.";
+        $error = "That email is not an admin account.";
     }
 }
 ?>
